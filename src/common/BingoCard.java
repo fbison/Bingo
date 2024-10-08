@@ -8,15 +8,22 @@ public class BingoCard {
     private int idRoom;
     private Set<Integer> markedNumbers;
 
-    public List<Integer> getCardNumbers(){
+    public List<Integer> getCardNumbers() {
         return numbers;
     }
+
+    // Método para marcar um número na cartela
     public void markNumber(int number) {
-        // Implementação
+        if (numbers.contains(number)) {
+            markedNumbers.add(number); // Adiciona o número ao conjunto de números marcados
+            System.out.println("Número " + number + " marcado na cartela.");
+        } else {
+            System.out.println("Número " + number + " não está na cartela.");
+        }
     }
 
+    // Verifica se todos os números da cartela foram marcados
     public boolean isComplete() {
-        // Implementação
-        return false; // Exemplo
+        return markedNumbers.containsAll(numbers);
     }
 }

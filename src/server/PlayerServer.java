@@ -4,13 +4,27 @@ import common.BingoCard;
 
 import java.net.Socket;
 import java.util.List;
+import java.util.UUID;
 
 public class PlayerServer {
-    private String id;
-    private Socket socket;
+    private UUID id;
     private String name;
     private String password;
     private List<BingoCard> cards;
+    private final ServerCommunication comunication;
 
-    // Getters, Setters, e outros métodos podem ser implementados aqui
+    public PlayerServer (Socket socket){
+        comunication = new ServerCommunication(socket);
+        id = UUID.randomUUID();
+    }
+
+    public void send(Object object){
+        comunication.send(object);
+    }
+
+    public ServerCommunication getCommunication(){
+        return comunication;
+    }
+
+
 }
