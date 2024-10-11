@@ -2,10 +2,11 @@ package common;
 
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 public class BingoCard {
     private List<Integer> numbers;
-    private int idRoom;
+    private UUID idRoom;
     private Set<Integer> markedNumbers;
 
     public List<Integer> getCardNumbers() {
@@ -25,5 +26,9 @@ public class BingoCard {
     // Verifica se todos os números da cartela foram marcados
     public boolean isComplete() {
         return markedNumbers.containsAll(numbers);
+    }
+
+    public UUID getIdRoom() {
+        return idRoom;
     }
 }

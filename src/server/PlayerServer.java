@@ -27,4 +27,7 @@ public class PlayerServer {
     }
 
 
+    public UUID getId() {
+        return id;
+    }
 }
