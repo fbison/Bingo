@@ -136,10 +136,10 @@ public class RoomServer {
 
     public PlayerServer findValidWinner() {
         synchronized (receivedBingos) {
-            receivedBingos.sort(Comparator.comparing(BingoMessage::getBingoTime));
+            receivedBingos.sort(Comparator.comparing(BingoMessage::bingoTime));
             for (BingoMessage receivedBingo : receivedBingos) {
                 if (bingoMessageIsValid(receivedBingo)) {
-                    PlayerServer winner = findPlayer(receivedBingo.getPlayerId());
+                    PlayerServer winner = findPlayer(receivedBingo.playerId());
                     if (winner != null) return winner;
                 }
             }
@@ -156,31 +156,26 @@ public class RoomServer {
     }
 
     public boolean bingoMessageIsValid(BingoMessage bingo) {
-        return bingo.getCard().getIdRoom().equals(id) &&
-                verifyCard(bingo.getCard());
-    }
-
-
-
-    // Broadcast para players (duplicado no Server e Room Server) talvez colocar em alguma biblioteca Util que receba uma lista de players com as mensagens
-    public void broadcast(Object object) {
-        for (PlayerServer player : players) {
-            executor.submit(() -> player.send(object));
-        }
+        return bingo.card().getIdRoom().equals(id) &&
+                verifyCard(bingo.card());
     }
 
     // Broadcast para o sorteio enviado
     public void broadcastDrawNumber(int drawNumber) {
-        broadcast("Número sorteado: " + drawNumber);
+        ServerUtils.broadcast(this.players, "Número sorteado: " + drawNumber);
     }
 
     // Broadcast para iniciar o jogo
     public void broadcastStartGame() {
-        broadcast("O jogo começou!");
+        ServerUtils.broadcast(this.players, "O jogo começou!");
     }
 
     // Broadcast para informar quem venceu
     public void broadcastWinner(PlayerServer winner) {
-        broadcast("O jogador com ID " + winner.getId() + " venceu!");
+        ServerUtils.broadcast(this.players, "O jogador com ID " + winner.getId() + " venceu!");
+    }
+
+    public UUID getId() {
+        return id;
     }
 }
