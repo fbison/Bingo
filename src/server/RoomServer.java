@@ -19,10 +19,10 @@ public class RoomServer {
     private final Integer INTERVALms = 1000;
 
     private final UUID id = randomUUID();
-    private final HashSet<Integer> drawnNumbers = new HashSet<Integer>();
+    private final HashSet<Integer> drawnNumbers = new HashSet<>();
     private final LinkedList<Integer> tableNumbers = new LinkedList<>(); // é utilizada pois retirar o primeiro é O(1)
-    private final List<PlayerServer> players = Collections.synchronizedList(new ArrayList<>());;
-    private final List<BingoMessage> receivedBingos = Collections.synchronizedList(new ArrayList<>());;
+    private final List<PlayerServer> players = Collections.synchronizedList(new ArrayList<>());
+    private final List<BingoMessage> receivedBingos = Collections.synchronizedList(new ArrayList<>());
     private final ExecutorService executor = Executors.newFixedThreadPool(10);
 
 

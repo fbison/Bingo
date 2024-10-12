@@ -1,7 +1,7 @@
 package common.Messages;
 
 public enum MessageType {
-    LogIn("Log In de Usuário"),
+    LOG_IN("Log In de Usuário"),
     CADASTRO_USUARIO("Cadastro de Usuário"),
     ENTRAR_SALA("Entrar na Sala"),
     ENVIAR_CARTELA("Enviar Cartela"),

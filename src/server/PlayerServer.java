@@ -48,6 +48,9 @@ public class PlayerServer {
             case CADASTRO_USUARIO:
                 handleCadastroUsuario(message.data());
                 break;
+            case LOG_IN:
+                handleLogIn(message.data());
+                break;
             case ENTRAR_SALA:
                 handleEntrarSala(message.data());
                 break;
@@ -69,11 +72,11 @@ public class PlayerServer {
         if(currentRoom == null || currentRoom.getId().equals(data.roomId())) {
             System.out.println("O usuário não está na sala citada na mensagem");
             return;
-        };
+        }
         if(getId().equals(data.playerId())) {
             System.out.println("Mensagem enviada com assinatura de usuário errada");
             return;
-        };
+        }
         currentRoom.receiveBingos(data);
     }
 
