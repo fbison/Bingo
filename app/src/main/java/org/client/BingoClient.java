@@ -79,7 +79,7 @@ public class BingoClient {
                 handleLogIn((LogInReturnMessage) message.data());
                 break;
         }
-        if (playerLoggedIn != null && message.data() != SUCESSO_LOG_IN) {
+        if (playerLoggedIn != null && message.type() != SUCESSO_LOG_IN) {
             playerLoggedIn.handleMessage(message);
         }
     }

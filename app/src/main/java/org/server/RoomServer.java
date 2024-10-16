@@ -41,8 +41,8 @@ public class RoomServer implements Runnable  {
                 canStartCondition.await(); // Espera até que isActive seja true
             }
             while (isActive) {
-                drawNumber();
                 Thread.sleep(INTERVALms); // Intervalo entre sorteios
+                drawNumber();
             }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
@@ -169,7 +169,7 @@ public class RoomServer implements Runnable  {
     }
 
     public void broadcastStartGame() {
-        MessageProtocol mensagem = new MessageProtocol(MessageType.AVISO_INICIO_SORTEIO, new StartRoomMessage(id));
+        MessageProtocol mensagem = new MessageProtocol(MessageType.AVISO_INICIO_SORTEIO, new RoomMessage(id, name));
         ServerUtils.broadcast(this.players, mensagem);
     }
 

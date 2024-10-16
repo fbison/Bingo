@@ -15,7 +15,7 @@ public class RoomClient{
         this.id = id;
         this.name = name;
         this.drawnNumbers = new ArrayList<>();
-        this.isActive = false;
+        this.isActive = true;
     }
 
 
@@ -28,8 +28,7 @@ public class RoomClient{
     // Atualiza a interface com os números sorteados
     public void displayNewNumber(int drawNumber) {
         System.out.println("///////////////////////////");
-        System.out.println("///////// SORTEADO ////////" );
-        System.out.println("///////// "+ drawNumber +" ////////" );
+        System.out.println("///// SORTEADO "+ drawNumber +"////" );
         System.out.println("///////////////////////////: ");
     }
 

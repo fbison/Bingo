@@ -50,7 +50,7 @@ public class PlayerServer {
                 handleLogIn((AuthenticationMessage)message.data());
                 break;
             case ENTRAR_SALA:
-                handleEntrarSala(message.data());
+                handleEntrarSala((RoomMessage)message.data());
                 break;
             case ENVIAR_CARTELA:
                 handleEnviarCartela(message.data());
@@ -142,16 +142,15 @@ public class PlayerServer {
     }
 
     // Função que trata a entrada do usuário na sala
-    private void handleEntrarSala(Object data) {
+    private void handleEntrarSala(RoomMessage data) {
         LogMaker.info("Tratando entrada na sala: " + data);
 
         try {
-            Map<String, Object> dataMap = (Map<String, Object>) data;
-            String roomId = (String) dataMap.get("roomId");
+            int roomId = data.roomId();
 
             // Verificar se a sala existe
             for (RoomServer room : Server.rooms) {
-                if (String.valueOf(room.getId()).equals(roomId)) {
+                if (room.getId() == roomId) {
                     currentRoom = room;
                     room.addPlayer(this);  // Adiciona o jogador à sala
                     LogMaker.info("Jogador " + name + " entrou na sala " + roomId);

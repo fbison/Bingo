@@ -45,7 +45,7 @@ public class ClientMain {
                 case "3":
                     System.out.println("Digite o ID da sala que você deseja entrar:");
                     String roomId = scanner.nextLine();
-                    client.enterRoom(roomId);
+                    client.enterRoom(Integer.parseInt(roomId));
                     break;
 
                 case "4":

@@ -3,11 +3,9 @@ package org.client;
 import org.shared.BingoCard;
 import org.shared.JsonParser;
 import org.shared.logs.LogMaker;
-import org.shared.messages.DrawNumberMessage;
-import org.shared.messages.MessageProtocol;
-import org.shared.messages.RoomMessage;
-import org.shared.messages.RoomsMessage;
+import org.shared.messages.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -52,7 +50,7 @@ public class PlayerClient {
                 handleSalasDisponiveis((RoomsMessage)message.data());
                 break;
             case AVISO_INICIO_SORTEIO:
-                handleAvisoInicioSorteio(message.data());
+                handleAvisoInicioSorteio((RoomMessage)message.data());
                 break;
             default:
                 LogMaker.info("Tipo de mensagem não reconhecido.");
@@ -61,8 +59,9 @@ public class PlayerClient {
     }
 
     private void handleSorteio(DrawNumberMessage data) {
+        if(getCurrentRoom() == null || getCurrentRoom().getId() != data.roomId()) return; // Só ignora a mensagem se não for pra sala que ele está
         LogMaker.info("Número sorteado: " + data);
-        if(getCurrentRoom().getId() != data.roomId()) return; // Só ignora a mensagem se não for pra sala que ele está
+        getCurrentRoom().receiveNumber(data.drawNumber());
         markNumber(data.drawNumber());
     }
 
@@ -75,8 +74,14 @@ public class PlayerClient {
         availableRooms = data.rooms();
     }
 
-    private void handleAvisoInicioSorteio(Object data) {
+    private void handleAvisoInicioSorteio(RoomMessage data) {
         LogMaker.info("Início do sorteio: " + data);
+        setCurrentRoom(
+                new RoomClient(data.roomId(), data.name())
+        );
+        Integer RANGE_DRAW = 75;
+        cards = new ArrayList<>();
+        cards.add(new BingoCard(RANGE_DRAW));
     }
 
     public RoomClient getCurrentRoom() {
