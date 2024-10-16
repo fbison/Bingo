@@ -3,7 +3,10 @@ package org.client;
 import org.shared.BingoCard;
 import org.shared.JsonParser;
 import org.shared.logs.LogMaker;
+import org.shared.messages.DrawNumberMessage;
 import org.shared.messages.MessageProtocol;
+import org.shared.messages.RoomMessage;
+import org.shared.messages.RoomsMessage;
 
 import java.util.List;
 import java.util.Map;
@@ -12,8 +15,9 @@ public class PlayerClient {
     private String id;
     private String name;
     private boolean winner;
+    private RoomClient currentRoom;
     private List<BingoCard> cards;
-
+    private List<RoomMessage> availableRooms;
     public PlayerClient(String name) {
         this.id = String.valueOf((int)(Math.random() * 9000) + 1000);  // Gera ID numérico entre 1000 e 9999
         this.name = name;
@@ -41,13 +45,13 @@ public class PlayerClient {
 
         switch (message.type()) {
             case SORTEIO:
-                handleSorteio(message.data());
+                handleSorteio((DrawNumberMessage) message.data());
                 break;
             case VENCEDOR:
                 handleVencedor(message.data());
                 break;
             case SALAS_DISPONIVEIS:
-                handleSalasDisponiveis(message.data());
+                handleSalasDisponiveis((RoomsMessage)message.data());
                 break;
             case AVISO_INICIO_SORTEIO:
                 handleAvisoInicioSorteio(message.data());
@@ -58,10 +62,10 @@ public class PlayerClient {
         }
     }
 
-    private void handleSorteio(Object data) {
+    private void handleSorteio(DrawNumberMessage data) {
         LogMaker.info("Número sorteado: " + data);
-        int number = (int) data;
-        markNumber(number);
+        if(getCurrentRoom().getId() != data.roomId()) return; // Só ignora a mensagem se não for pra sala que ele está
+        markNumber(data.drawNumber());
     }
 
     private void handleVencedor(Object data) {
@@ -69,21 +73,19 @@ public class PlayerClient {
         winner = true;
     }
 
-    private void handleSalasDisponiveis(Object data) {
-        LogMaker.info("Salas disponíveis: " + data);
-
-        List<Map<String, Object>> roomsList = JsonParser.parseJson(data.toString(), List.class);
-        if (roomsList == null || roomsList.isEmpty()) {
-            LogMaker.warn("Nenhuma sala disponível.");
-            return;
-        }
-
-        for (Map<String, Object> room : roomsList) {
-            LogMaker.info("Sala ID: " + room.get("id") + " | Nome: " + room.get("name"));
-        }
+    private void handleSalasDisponiveis(RoomsMessage data) {
+        availableRooms = data.rooms();
     }
 
     private void handleAvisoInicioSorteio(Object data) {
         LogMaker.info("Início do sorteio: " + data);
+    }
+
+    public RoomClient getCurrentRoom() {
+        return currentRoom;
+    }
+
+    public void setCurrentRoom(RoomClient currentRoom) {
+        this.currentRoom = currentRoom;
     }
 }

@@ -35,6 +35,9 @@ public class PlayerServer {
     public UUID getId() {
         return id;
     }
+    public String getName() {
+        return name;
+    }
 
     // Função que processa as mensagens recebidas do cliente
     public void handleMessage(String originalMessage) {
@@ -128,6 +131,7 @@ public class PlayerServer {
         LogMaker.info("Falha no login para o usuário: " + username);
         send("Falha no login");
     }
+
     // Função que processa a solicitação de lista de salas
     private void handleRequestRooms() {
         LogMaker.info("Solicitação de lista de salas recebida.");
@@ -156,6 +160,8 @@ public class PlayerServer {
             LogMaker.error("Erro ao processar o envio da cartela: " + e.getMessage());
         }
     }
+
+    // Função que trata a entrada do usuário na sala
     private void handleEntrarSala(Object data) {
         LogMaker.info("Tratando entrada na sala: " + data);
 
@@ -183,7 +189,7 @@ public class PlayerServer {
     }
     // Processa a solicitação de Bingo do cliente
     private void handleBingo(BingoMessage data) {
-        if (currentRoom == null || !String.valueOf(currentRoom.getId()).equals(data.roomId().toString())) {
+        if (currentRoom == null ||  currentRoom.getId()!=data.roomId()) {
             LogMaker.warn("O usuário não está na sala citada na mensagem");
             send("Erro: Você não está na sala mencionada.");
             return;

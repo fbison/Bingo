@@ -8,5 +8,10 @@ import java.util.UUID;
 /**
  * @param bingoTime Usando OffsetDateTime para não haver problemas de fuso horários diferentes
  */
-public record BingoMessage(UUID playerId, UUID roomId, BingoCard card, OffsetDateTime bingoTime) {
+public record BingoMessage(
+        UUID playerId,
+        int roomId,
+        BingoCard card,
+        OffsetDateTime bingoTime
+) {
 }

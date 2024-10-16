@@ -8,7 +8,7 @@ import java.util.UUID;
 
 public class BingoCard {
     private List<Integer> numbers;
-    private UUID idRoom;
+    private int idRoom;
     private Set<Integer> markedNumbers;
 
     public List<Integer> getCardNumbers() {
@@ -30,7 +30,7 @@ public class BingoCard {
         return markedNumbers.containsAll(numbers);
     }
 
-    public UUID getIdRoom() {
+    public int getIdRoom() {
         return idRoom;
     }
 }

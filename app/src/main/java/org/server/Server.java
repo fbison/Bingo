@@ -2,6 +2,10 @@ package org.server;
 
 import org.shared.JsonParser;
 import org.shared.logs.LogMaker;
+import org.shared.messages.MessageProtocol;
+import org.shared.messages.MessageType;
+import org.shared.messages.RoomMessage;
+import org.shared.messages.RoomsMessage;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -9,13 +13,17 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class Server {
     private static Server instance;
     private static final int PORT = 12345;
+    private static final int QTD_THREADS_SALAS = 3;
     public static List<PlayerServer> registeredPlayers = new ArrayList<>();
     private final List<PlayerServer> onlinePlayers = new ArrayList<>(); // Lista de jogadores online
     public static List<RoomServer> rooms = new ArrayList<>();
+    private final ExecutorService executor = Executors.newFixedThreadPool(QTD_THREADS_SALAS);
 
     // Singleton para garantir que o servidor tenha apenas uma instância
     public static Server getInstance() {
@@ -34,7 +42,7 @@ public class Server {
             LogMaker.info("Servidor rodando na porta " + PORT);
 
             // Criar salas no servidor (por exemplo, 3 salas iniciais)
-            createRooms(3);
+            createRooms(QTD_THREADS_SALAS);
 
             while (true) {
                 Socket clientSocket = serverSocket.accept();
@@ -68,7 +76,20 @@ public class Server {
             RoomServer room = new RoomServer("Sala " + i);
             rooms.add(room);
             LogMaker.info("Sala criada: " + room.getId() + " - " + room.getName());
+
+            // Inicia a execução de cada sala em uma thread
+            executor.submit(room::run);
         }
+        broadCastRooms();
+    }
+
+    public void broadCastRooms(){
+        ArrayList<RoomMessage> list = new ArrayList<>();
+        for (RoomServer room : rooms) {
+            list.add(new RoomMessage(room.getId(), room.getName()));
+        }
+        RoomsMessage data= new RoomsMessage(list);
+        ServerUtils.broadcast(onlinePlayers, new MessageProtocol(MessageType.SALAS_DISPONIVEIS, data));
     }
 
     // Envia a lista de salas disponíveis para um jogador específico

@@ -3,45 +3,55 @@ package org.client;
 import java.util.ArrayList;
 import java.util.List;
 
-public class RoomClient {
-    private String id;
+import org.shared.messages.RoomMessage;
+
+public class RoomClient{
+    private int id;
     private String name;
     private List<Integer> drawnNumbers;
+    private boolean isActive;
 
-    public RoomClient(String id, String name) {
+    public RoomClient(int id, String name) {
         this.id = id;
         this.name = name;
         this.drawnNumbers = new ArrayList<>();
+        this.isActive = false;
     }
+
 
     public void receiveNumber(int number) {
         drawnNumbers.add(number);
         System.out.println("Número recebido na sala: " + number);
-        interfaceDisplay(); // Atualiza a interface para mostrar o novo número
+        displayNewNumber(number); // Atualiza a interface para mostrar o novo número
     }
 
-    public void interfaceDisplay() {
-        // Atualiza a interface com os números sorteados
-        System.out.println("Números sorteados até agora: " + drawnNumbers);
+    // Atualiza a interface com os números sorteados
+    public void displayNewNumber(int drawNumber) {
+        System.out.println("///////////////////////////");
+        System.out.println("///////// SORTEADO ////////" );
+        System.out.println("///////// "+ drawNumber +" ////////" );
+        System.out.println("///////////////////////////: ");
     }
 
-    public void handleMessage(String originalMessage) {
-        // Método para processar as mensagens recebidas relacionadas à sala
-        if (originalMessage.contains("Número sorteado")) {
-            // Extrair o número sorteado da mensagem e chamar o método apropriado
-            try {
-                int number = Integer.parseInt(originalMessage.replaceAll("[^0-9]", ""));
-                receiveNumber(number);
-            } catch (NumberFormatException e) {
-                System.out.println("Erro ao processar número sorteado: " + e.getMessage());
-            }
-        } else {
-            System.out.println("Mensagem não reconhecida pela sala: " + originalMessage);
+    // Atualiza a interface com os números sorteados
+    public void displayRoomStartes(int drawNumber) {
+        System.out.println("///////////////////////////");
+        System.out.println("///////// COMEÇOU /////////" );
+        System.out.println("///////////////////////////: ");
+    }
+    // Mostra quais as salas disponíveis
+    public void displayRoomsAvailables(List<RoomMessage> rooms) {
+        System.out.println("///////////////////////////");
+
+        for (RoomMessage room : rooms) {
+            System.out.println("////////// SALA"+ room.roomId()+"/////////" );
+            System.out.println("////////// "+ room.name()+"/////////" );
         }
+        System.out.println("///////////////////////////: ");
     }
 
-    // Funções para obter as informações da sala, como ID e nome
-    public String getId() {
+    // Funções para obter as informações da sala, como ID e name
+    public int getId() {
         return id;
     }
 

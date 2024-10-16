@@ -6,12 +6,8 @@ public class ClientMain {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
 
-        // Informar o IP e a porta do servidor
-        System.out.println("Digite o IP do servidor (localhost para teste local):");
-        String host = scanner.nextLine();
-
-        System.out.println("Digite a porta do servidor:");
-        int port = Integer.parseInt(scanner.nextLine());
+        String host = "127.0.0.1";
+        int port = 12345;
 
         // Inicializa o cliente de bingo
         BingoClient client = new BingoClient();
@@ -31,7 +27,7 @@ public class ClientMain {
 
             switch (choice) {
                 case "1":
-                    System.out.println("Digite seu nome de usuário:");
+                    System.out.println("Digite seu name de usuário:");
                     String registerUsername = scanner.nextLine();
                     System.out.println("Digite sua senha:");
                     String registerPassword = scanner.nextLine();
@@ -39,7 +35,7 @@ public class ClientMain {
                     break;
 
                 case "2":
-                    System.out.println("Digite seu nome de usuário:");
+                    System.out.println("Digite seu name de usuário:");
                     String loginUsername = scanner.nextLine();
                     System.out.println("Digite sua senha:");
                     String loginPassword = scanner.nextLine();

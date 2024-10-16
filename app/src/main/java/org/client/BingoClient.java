@@ -10,7 +10,6 @@ import java.util.Map;
 
 public class BingoClient {
     private ClientCommunication clientCommunication;
-    private RoomClient roomOpen;
     private PlayerClient playerLoggedIn;
 
     // Conecta ao servidor usando TCP e inicializa a comunicação
@@ -54,15 +53,11 @@ public class BingoClient {
         while (true) {
             Object message = clientCommunication.receiveFromServer();
             if (message == null) {
-                LogMaker.warn("Conexão perdida com o servidor.");
                 break;
             }
-
             // Verifica qual tipo de mensagem está recebendo e direciona ao objeto correto
             if (playerLoggedIn != null) {
                 playerLoggedIn.handleMessage(message.toString());
-            } else if (roomOpen != null) {
-                roomOpen.handleMessage(message.toString());
             }
         }
     }

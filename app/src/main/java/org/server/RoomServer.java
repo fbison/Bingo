@@ -2,7 +2,7 @@ package org.server;
 
 import org.shared.BingoCard;
 import org.shared.logs.LogMaker;
-import org.shared.messages.BingoMessage;
+import org.shared.messages.*;
 
 import java.util.*;
 import java.util.concurrent.ExecutorService;
@@ -11,17 +11,16 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-public class RoomServer {
-    private static int roomCounter = 1000; // Inicializa o ID das salas a partir de 1000
+public class RoomServer implements Runnable  {
+    private final Integer RANGE_DRAW = 75;
+    private final Integer INTERVALms = 3000;
     private final int id;
     private final String name;
-    private final Integer RANGE_DRAW = 75;
-    private final Integer INTERVALms = 1000;
     private final HashSet<Integer> drawnNumbers = new HashSet<>();
     private final LinkedList<Integer> tableNumbers = new LinkedList<>();
     private final List<PlayerServer> players = Collections.synchronizedList(new ArrayList<>());
     private final List<BingoMessage> receivedBingos = Collections.synchronizedList(new ArrayList<>());
-    private final ExecutorService executor = Executors.newFixedThreadPool(10);
+    private static int roomCounter = 1000; // Inicializa o ID das salas a partir de 1000 é estático para toda instância somar um
 
     private boolean isActive = false;
     private PlayerServer winner;
@@ -33,6 +32,25 @@ public class RoomServer {
     public RoomServer(String name) {
         this.id = roomCounter++;
         this.name = name;
+    }
+
+    public void run() {
+        lock.lock();
+        try {
+            while (!isActive) {
+                canStartCondition.await(); // Espera até que isActive seja true
+            }
+            while (isActive) {
+                drawNumber();
+                Thread.sleep(INTERVALms); // Intervalo entre sorteios
+            }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        } catch (Exception e) {
+            LogMaker.error("Erro na sala: " + e.getMessage());
+        } finally {
+            lock.unlock();
+        }
     }
 
     public int getId() {
@@ -78,7 +96,7 @@ public class RoomServer {
     }
 
     public void drawNumber() throws Exception {
-        if (tableNumbers.isEmpty()) throw new Exception("Números acabaram");
+        if (tableNumbers.isEmpty()) isActive = false;
         int drawNumber = tableNumbers.removeFirst();
         drawnNumbers.add(drawNumber);
         broadcastDrawNumber(drawNumber);
@@ -110,7 +128,7 @@ public class RoomServer {
     }
 
     private boolean bingoMessageIsValid(BingoMessage bingo) {
-        return bingo.card().getIdRoom().toString().equals(String.valueOf(id)) && verifyCard(bingo.card());
+        return bingo.card().getIdRoom()== id && verifyCard(bingo.card());
     }
 
     private boolean verifyCard(BingoCard card) {
@@ -120,26 +138,44 @@ public class RoomServer {
         return true;
     }
 
+    public void resetRoom() {
+        lock.lock();
+        try {
+            isActive = false;
+            players.clear();         // Remove todos os jogadores
+            drawnNumbers.clear();    // Limpa os números já sorteados
+            tableNumbers.clear();    // Limpa a tabela de números
+            receivedBingos.clear();  // Limpa os bingos recebidos
+            winner = null;           // Reseta o vencedor
+
+            LogMaker.info("Sala " + getName() + " foi reiniciada.");
+        } finally {
+            lock.unlock();
+        }
+    }
+
+
     private void stopRoom() {
         isActive = false;
-        shutdownExecutor();
+        broadcastWinner(winner);
+        resetRoom();     // Reinicia a sala para permitir um novo jogo
     }
 
-    private void shutdownExecutor() {
-        executor.shutdown();
-    }
 
-    // Funções de broadcast
+    //Coloca o número sorteado no protocolo e envia para todos os jogadores da sala
     public void broadcastDrawNumber(int drawNumber) {
-        ServerUtils.broadcast(this.players, "Número sorteado: " + drawNumber);
+        MessageProtocol mensagem = new MessageProtocol(MessageType.SORTEIO, new DrawNumberMessage(this.id, drawNumber));
+        ServerUtils.broadcast(this.players, mensagem);
     }
 
     public void broadcastStartGame() {
-        ServerUtils.broadcast(this.players, "O jogo começou!");
+        MessageProtocol mensagem = new MessageProtocol(MessageType.AVISO_INICIO_SORTEIO, new StartRoomMessage(id));
+        ServerUtils.broadcast(this.players, mensagem);
     }
 
     public void broadcastWinner(PlayerServer winner) {
-        ServerUtils.broadcast(this.players, "O jogador " + winner.getId() + " venceu!");
+        MessageProtocol message = new MessageProtocol(MessageType.VENCEDOR, new WinnerMessage(id, winner.getName(), winner.getId()));
+        ServerUtils.broadcast(this.players, message);
     }
 
     public void receiveBingos(BingoMessage message) {
