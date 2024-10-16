@@ -1,4 +1,6 @@
-package common;
+package org.shared;
+
+import org.shared.logs.LogMaker;
 
 import java.util.List;
 import java.util.Set;
@@ -17,9 +19,9 @@ public class BingoCard {
     public void markNumber(int number) {
         if (numbers.contains(number)) {
             markedNumbers.add(number); // Adiciona o número ao conjunto de números marcados
-            System.out.println("Número " + number + " marcado na cartela.");
+            LogMaker.info("Número " + number + " marcado na cartela.");
         } else {
-            System.out.println("Número " + number + " não está na cartela.");
+            LogMaker.warn("Número " + number + " não está na cartela.");
         }
     }
 

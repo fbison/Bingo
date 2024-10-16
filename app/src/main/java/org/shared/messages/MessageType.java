@@ -1,4 +1,4 @@
-package common.Messages;
+package org.shared.messages;
 
 public enum MessageType {
     LOG_IN("Log In de Usuário"),

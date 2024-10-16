@@ -1,6 +1,6 @@
-package common.Messages;
+package org.shared.messages;
 
-import common.BingoCard;
+import org.shared.BingoCard;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;

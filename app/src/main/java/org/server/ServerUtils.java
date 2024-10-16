@@ -1,4 +1,4 @@
-package server;
+package org.server;
 
 import java.util.List;
 import java.util.concurrent.ExecutorService;
