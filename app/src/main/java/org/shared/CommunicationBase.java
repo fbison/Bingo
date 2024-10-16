@@ -1,6 +1,8 @@
 package org.shared;
 
 import org.shared.logs.LogMaker;
+import org.shared.messages.MessageProtocol;
+import org.shared.messages.MessageType;
 
 import java.io.*;
 import java.net.Socket;
@@ -34,6 +36,7 @@ public abstract class CommunicationBase {
     /**
      * Envia dados através do socket.
      */
+    //trocar para MessageProtocol o parâmetro
     public void send(Object data) {
         if (outputStream == null) {
             LogMaker.error("Erro ao enviar dados: OutputStream não está inicializado.");

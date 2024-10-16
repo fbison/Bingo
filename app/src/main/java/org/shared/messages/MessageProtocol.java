@@ -1,4 +1,6 @@
 package org.shared.messages;
 
-public record MessageProtocol(MessageType type, Object data) {
+import java.io.Serializable;
+
+public record MessageProtocol(MessageType type, Object data) implements Serializable {
 }

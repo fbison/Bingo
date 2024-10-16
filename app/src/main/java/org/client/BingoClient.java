@@ -1,12 +1,16 @@
 package org.client;
 
+import org.shared.BingoCard;
 import org.shared.JsonParser;
 import org.shared.logs.LogMaker;
-import org.shared.messages.MessageProtocol;
-import org.shared.messages.MessageType;
+import org.shared.messages.*;
 
 import java.net.Socket;
+import java.time.OffsetDateTime;
 import java.util.Map;
+import java.util.UUID;
+
+import static org.shared.messages.MessageType.SUCESSO_LOG_IN;
 
 public class BingoClient {
     private ClientCommunication clientCommunication;
@@ -30,23 +34,24 @@ public class BingoClient {
     // Login de usuário
     public void login(String username, String password) {
         MessageProtocol loginMessage = new MessageProtocol(MessageType.LOG_IN,
-                Map.of("username", username, "password", password));
-        clientCommunication.sendToServer(JsonParser.toJson(loginMessage));
+                new AuthenticationMessage(username, password));
+        clientCommunication.sendToServer(loginMessage);
     }
 
     // Registro de novo usuário
     public void register(String username, String password) {
         MessageProtocol registerMessage = new MessageProtocol(MessageType.CADASTRO_USUARIO,
-                Map.of("username", username, "password", password));
-        clientCommunication.sendToServer(JsonParser.toJson(registerMessage));
+                new AuthenticationMessage(username, password));
+        clientCommunication.sendToServer(registerMessage);
     }
 
     // Solicita a lista de salas ao servidor
     public void requestRooms() {
         MessageProtocol roomsRequestMessage = new MessageProtocol(MessageType.SALAS_DISPONIVEIS, null);
-        clientCommunication.sendToServer(JsonParser.toJson(roomsRequestMessage));
+        clientCommunication.sendToServer(roomsRequestMessage);
         LogMaker.info("Solicitação de lista de salas enviada.");
     }
+
 
     // Ouvindo as mensagens recebidas do servidor em uma thread separada
     private void listenToServerMessages() {
@@ -55,11 +60,35 @@ public class BingoClient {
             if (message == null) {
                 break;
             }
-            // Verifica qual tipo de mensagem está recebendo e direciona ao objeto correto
-            if (playerLoggedIn != null) {
-                playerLoggedIn.handleMessage(message.toString());
-            }
+            handleMessage(message);
         }
+    }
+
+
+    public void handleMessage(Object receivedData) {
+        if (!(receivedData instanceof MessageProtocol message)) {
+            LogMaker.info("Tipo de mensagem desconhecido.");
+            return;
+        }
+
+        switch (message.type()) {
+            case PING:
+                handlePing();
+                break;
+            case SUCESSO_LOG_IN:
+                handleLogIn((LogInReturnMessage) message.data());
+                break;
+        }
+        if (playerLoggedIn != null && message.data() != SUCESSO_LOG_IN) {
+            playerLoggedIn.handleMessage(message);
+        }
+    }
+
+    private void handleLogIn(LogInReturnMessage message){
+        this.playerLoggedIn = new PlayerClient(message.playerId(), message.name(), clientCommunication);
+    }
+    private void handlePing(){
+        clientCommunication.send(new MessageProtocol(MessageType.PONG, null));
     }
 
     // Desconecta o cliente
@@ -68,13 +97,8 @@ public class BingoClient {
     }
 
     // Entrar em uma sala específica pelo ID
-    public void enterRoom(String roomId) {
-        if (roomId == null || roomId.isEmpty()) {
-            requestRooms();  // Solicita as salas se não tiver um ID ainda
-            return;
-        }
-
-        String enterRoomMessage = String.format("{\"type\": \"ENTRAR_SALA\", \"data\": {\"roomId\": \"%s\"}}", roomId);
+    public void enterRoom(int roomId) {
+        MessageProtocol enterRoomMessage = new MessageProtocol(MessageType.ENTRAR_SALA, new RoomMessage(roomId, ""));
         clientCommunication.sendToServer(enterRoomMessage);
         LogMaker.info("Solicitação para entrar na sala enviada.");
     }
@@ -82,7 +106,12 @@ public class BingoClient {
     // Envia a declaração de Bingo para o servidor
     public void sendBingo() {
         if (playerLoggedIn != null) {
-            String bingoMessage = String.format("{\"type\": \"BINGO\", \"data\": {\"playerId\": \"%s\"}}", playerLoggedIn.getId());
+            MessageProtocol bingoMessage = new MessageProtocol(MessageType.BINGO, new BingoMessage(
+                    playerLoggedIn.getId(),
+                    playerLoggedIn.getCurrentRoom().getId(),
+                    null,
+                    OffsetDateTime.now()
+            ));
             clientCommunication.sendToServer(bingoMessage);
             LogMaker.info("Solicitação de Bingo enviada.");
         } else {

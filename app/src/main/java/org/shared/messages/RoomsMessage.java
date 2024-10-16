@@ -1,5 +1,6 @@
 package org.shared.messages;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
 /**
@@ -7,5 +8,5 @@ import java.util.ArrayList;
  */
 public record RoomsMessage(
         ArrayList<RoomMessage> rooms
-) {
+) implements Serializable {
 }

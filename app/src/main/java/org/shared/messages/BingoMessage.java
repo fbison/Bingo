@@ -2,6 +2,7 @@ package org.shared.messages;
 
 import org.shared.BingoCard;
 
+import java.io.Serializable;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
@@ -13,5 +14,5 @@ public record BingoMessage(
         int roomId,
         BingoCard card,
         OffsetDateTime bingoTime
-) {
+) implements Serializable {
 }

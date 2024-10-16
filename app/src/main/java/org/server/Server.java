@@ -83,29 +83,24 @@ public class Server {
         broadCastRooms();
     }
 
-    public void broadCastRooms(){
+    private MessageProtocol formatToSendRooms(){
         ArrayList<RoomMessage> list = new ArrayList<>();
         for (RoomServer room : rooms) {
             list.add(new RoomMessage(room.getId(), room.getName()));
         }
         RoomsMessage data= new RoomsMessage(list);
-        ServerUtils.broadcast(onlinePlayers, new MessageProtocol(MessageType.SALAS_DISPONIVEIS, data));
+        return new MessageProtocol(MessageType.SALAS_DISPONIVEIS, data);
+    }
+
+    //envia a lista de salas disponíveis para todos os usuários online
+    public void broadCastRooms(){
+        ServerUtils.broadcast(onlinePlayers, formatToSendRooms());
     }
 
     // Envia a lista de salas disponíveis para um jogador específico
     public void sendRoomsToPlayer(PlayerServer player) {
-        List<Map<String, Object>> roomsData = new ArrayList<>();
-        for (RoomServer room : rooms) {
-            Map<String, Object> roomInfo = Map.of(
-                    "id", room.getId(),
-                    "name", room.getName()
-            );
-            roomsData.add(roomInfo);
-        }
-
-        String roomsJson = JsonParser.toJson(roomsData);
-        player.send(roomsJson);
         LogMaker.info("Lista de salas enviada para o jogador: " + player.getId());
+        player.send(formatToSendRooms());
     }
 }
 

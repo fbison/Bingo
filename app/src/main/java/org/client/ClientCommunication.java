@@ -1,9 +1,7 @@
 package org.client;
 
 import org.shared.CommunicationBase;
-import org.shared.logs.LogMaker;
 
-import java.io.IOException;
 import java.net.Socket;
 
 public class ClientCommunication extends CommunicationBase {

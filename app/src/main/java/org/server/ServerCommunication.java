@@ -1,14 +1,18 @@
 package org.server;
 
 import org.shared.CommunicationBase;
+import org.shared.JsonParser;
 import org.shared.logs.LogMaker;
+import org.shared.messages.MessageProtocol;
+import org.shared.messages.MessageType;
 
 import java.net.Socket;
 
 public class ServerCommunication extends CommunicationBase implements Runnable {
 
-    private static final long KEEP_ALIVE_INTERVAL = 200000; // Intervalo para envio do keep-alive (20 segundos)
-    private static final long TIMEOUT = 150000; // Timeout de 30 segundos se não houver resposta
+    //diminuir depois
+    private static final long KEEP_ALIVE_INTERVALms = 1500000; // Intervalo para envio do keep-alive (20 segundos)
+    private static final long TIMEOUTms = 3000000; // Timeout de 30 segundos se não houver resposta
 
     private long lastPongReceivedTime; // Marca o tempo da última resposta "pong"
     private boolean keepAliveEnabled = true;
@@ -49,13 +53,13 @@ public class ServerCommunication extends CommunicationBase implements Runnable {
             while (keepAliveEnabled) {
                 try {
                     long currentTime = System.currentTimeMillis();
-                    if (currentTime - lastPongReceivedTime > TIMEOUT) {
-                        LogMaker.info("Timeout: cliente não respondeu ao keep-alive.");
+                    if (currentTime - lastPongReceivedTime > TIMEOUTms) {
+                        LogMaker.info("Timeout: cliente "+ player.getId() +" não respondeu ao keep-alive.");
                         disconnect();
                         break;
                     }
                     sendKeepAlive();
-                    Thread.sleep(KEEP_ALIVE_INTERVAL);
+                    Thread.sleep(KEEP_ALIVE_INTERVALms);
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                 }
@@ -65,22 +69,31 @@ public class ServerCommunication extends CommunicationBase implements Runnable {
     }
 
     private void processReceivedData(Object receivedData) {
-        if (!(receivedData instanceof String message)) {
+        if (!(receivedData instanceof MessageProtocol messageProtocol)) {
             LogMaker.info("Tipo de mensagem desconhecido.");
             return;
         }
-        if ("pong".equals(message)) {
-            lastPongReceivedTime = System.currentTimeMillis();
-            LogMaker.info("Pong recebido.");
-        } else {
-            player.handleMessage(message);
-        }
-    }
 
+        player.handleMessage(messageProtocol);
+    }
+    public void handlePong(){
+        lastPongReceivedTime = System.currentTimeMillis();
+        LogMaker.info("Pong recebido de :" + player.getId());
+    }
+    private MessageProtocol formatMessage(String originalMessage){
+        MessageProtocol message;
+        try {
+            message = JsonParser.parseJson(originalMessage, MessageProtocol.class);
+        } catch (Exception e) {
+            LogMaker.info("Mensagem em formato errado");
+            return null;
+        }
+        return  message;
+    }
     private void sendKeepAlive() {
         try {
-            send("ping");
-            LogMaker.info("Ping enviado.");
+            send(new MessageProtocol(MessageType.PING, null));
+            LogMaker.info("Ping enviado para "+player.getId());
         } catch (Exception e) {
             LogMaker.error("Erro ao enviar o ping: " + e.getMessage());
         }

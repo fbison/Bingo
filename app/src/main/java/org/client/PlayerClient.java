@@ -9,22 +9,25 @@ import org.shared.messages.RoomMessage;
 import org.shared.messages.RoomsMessage;
 
 import java.util.List;
-import java.util.Map;
+import java.util.UUID;
 
 public class PlayerClient {
-    private String id;
+    private final UUID id;
     private String name;
     private boolean winner;
     private RoomClient currentRoom;
     private List<BingoCard> cards;
     private List<RoomMessage> availableRooms;
-    public PlayerClient(String name) {
-        this.id = String.valueOf((int)(Math.random() * 9000) + 1000);  // Gera ID numérico entre 1000 e 9999
+    private ClientCommunication clientCommunication;
+
+    public PlayerClient(UUID id, String name, ClientCommunication communication) {
+        this.id = id;  // Gera ID numérico entre 1000 e 9999
         this.name = name;
         this.winner = false;
+        this.clientCommunication = communication;
     }
 
-    public String getId() {
+    public UUID getId() {
         return id;
     }
 
@@ -36,12 +39,7 @@ public class PlayerClient {
         }
     }
 
-    public void handleMessage(String originalMessage) {
-        MessageProtocol message = JsonParser.parseJson(originalMessage, MessageProtocol.class);
-        if (message == null) {
-            LogMaker.info("Mensagem em formato errado");
-            return;
-        }
+    public void handleMessage(MessageProtocol message) {
 
         switch (message.type()) {
             case SORTEIO:

@@ -3,8 +3,7 @@ package org.server;
 import org.shared.BingoCard;
 import org.shared.JsonParser;
 import org.shared.logs.LogMaker;
-import org.shared.messages.BingoMessage;
-import org.shared.messages.MessageProtocol;
+import org.shared.messages.*;
 
 import java.net.Socket;
 import java.util.List;
@@ -12,7 +11,7 @@ import java.util.Map;
 import java.util.UUID;
 
 public class PlayerServer {
-    private final UUID id;
+    private UUID id;
     private String name;
     private String password;
     private List<BingoCard> cards;
@@ -24,6 +23,7 @@ public class PlayerServer {
         id = UUID.randomUUID();  // Gera um UUID único para o jogador
     }
 
+    //trocar aqui para MessageProtocol
     public void send(Object object) {
         communication.send(object);
     }
@@ -40,22 +40,14 @@ public class PlayerServer {
     }
 
     // Função que processa as mensagens recebidas do cliente
-    public void handleMessage(String originalMessage) {
-        MessageProtocol message;
-        try {
-            message = JsonParser.parseJson(originalMessage, MessageProtocol.class);
-        } catch (Exception e) {
-            LogMaker.info("Mensagem em formato errado");
-            return;
-        }
-
+    public void handleMessage(MessageProtocol message) {
         // Direciona o tratamento de acordo com o tipo de mensagem
         switch (message.type()) {
             case CADASTRO_USUARIO:
-                handleCadastroUsuario(message.data());
+                handleCadastroUsuario((AuthenticationMessage)message.data());
                 break;
             case LOG_IN:
-                handleLogIn(message.data());
+                handleLogIn((AuthenticationMessage)message.data());
                 break;
             case ENTRAR_SALA:
                 handleEntrarSala(message.data());
@@ -69,6 +61,9 @@ public class PlayerServer {
             case BINGO:
                 handleBingo((BingoMessage) message.data());
                 break;
+            case PONG:
+                getCommunication().handlePong();
+                break;
             default:
                 LogMaker.info("Tipo de mensagem não reconhecido.");
                 break;
@@ -76,60 +71,45 @@ public class PlayerServer {
     }
 
     // Função que processa o cadastro de um novo usuário
-    private void handleCadastroUsuario(Object data) {
-        if (!(data instanceof Map)) {
-            LogMaker.error("Dados de cadastro inválidos.");
-            send("Erro ao cadastrar: Dados inválidos.");
-            return;
-        }
-
-        Map<String, String> cadastroData = (Map<String, String>) data;
-        String username = cadastroData.get("username");
-        String password = cadastroData.get("password");
+    private void handleCadastroUsuario(AuthenticationMessage data) {
 
         // Verifica se o usuário já existe
         for (PlayerServer player : Server.registeredPlayers) {
-            if (player.name != null && player.name.equals(username)) {
-                LogMaker.info("Usuário já registrado: " + username);
-                send("Usuário já registrado");
+            if (player.name != null && player.name.equals(data.username())) {
+                LogMaker.info("Usuário já registrado: " + data.username());
+                send(new MessageProtocol(MessageType.ERRO,"Usuário já registrado"));
                 return;
             }
         }
-
-        this.name = username;
-        this.password = password;
+        this.name = data.username();
+        this.password = data.password();
         Server.registeredPlayers.add(this);
-        LogMaker.info("Cadastro bem-sucedido para o usuário: " + username);
+        LogMaker.info("Cadastro bem-sucedido para o usuário: " + data.username());
         send("Cadastro bem-sucedido");
     }
 
     // Função que processa o login do usuário
-    private void handleLogIn(Object data) {
+    private void handleLogIn(AuthenticationMessage data) {
         LogMaker.info("Tratando login de usuário: " + data);
-        if (!(data instanceof Map)) {
-            LogMaker.error("Dados de login inválidos.");
-            send("Dados de login inválidos.");
-            return;
-        }
-
-        Map<String, String> loginData = (Map<String, String>) data;
-        String username = loginData.get("username");
-        String password = loginData.get("password");
 
         for (PlayerServer player : Server.registeredPlayers) {
-            if (player.name.equals(username) && player.password.equals(password)) {
-                this.name = username;
-                this.password = password;
-                LogMaker.info("Login bem-sucedido para o usuário: " + username);
-                send("Login bem-sucedido");
+            if (player.name.equals(data.username()) && player.password.equals(password)) {
+                // é preciso fazer isso por que essa instância do player representa o cliente,
+                // então após  ele logar o player dessa comunicação mudou
+                this.id = player.id;
+                this.name = data.username();
+                this.password = data.password();
+
+                LogMaker.info("Login bem-sucedido para o usuário: " + data.username());
+                send(new MessageProtocol(MessageType.SUCESSO_LOG_IN,new LogInReturnMessage(id, data.username())));
 
                 // Associe o jogador à lista de jogadores online
                 Server.getInstance().addOnlinePlayer(this);
                 return;
             }
         }
-        LogMaker.info("Falha no login para o usuário: " + username);
-        send("Falha no login");
+        LogMaker.info("Falha no login para o usuário: " + data.username());
+        send(new MessageProtocol(MessageType.ERRO,"Falha no login"));
     }
 
     // Função que processa a solicitação de lista de salas
@@ -147,7 +127,7 @@ public class PlayerServer {
 
             if (currentRoom == null) {
                 LogMaker.info("Falha ao enviar cartela: Jogador não está em uma sala");
-                send("Você não está em uma sala.");
+                send(new MessageProtocol(MessageType.ERRO,"Você não está em uma sala."));
                 return;
             }
 
@@ -181,7 +161,7 @@ public class PlayerServer {
             }
 
             LogMaker.info("Falha ao entrar na sala: Sala não encontrada");
-            send("Sala não encontrada");
+            send(new MessageProtocol(MessageType.ERRO,"Sala não encontrada"));
 
         } catch (Exception e) {
             LogMaker.error("Erro ao processar a entrada na sala: " + e.getMessage());
@@ -191,13 +171,14 @@ public class PlayerServer {
     private void handleBingo(BingoMessage data) {
         if (currentRoom == null ||  currentRoom.getId()!=data.roomId()) {
             LogMaker.warn("O usuário não está na sala citada na mensagem");
-            send("Erro: Você não está na sala mencionada.");
+            send(new MessageProtocol(MessageType.ERRO,
+            "Erro: Você não está na sala mencionada."));
             return;
         }
 
         if (!getId().equals(data.playerId())) {
             LogMaker.warn("Mensagem enviada com assinatura de usuário errada");
-            send("Erro: ID de jogador incorreto.");
+            send(new MessageProtocol(MessageType.ERRO,"Erro: ID de jogador incorreto."));
             return;
         }
 

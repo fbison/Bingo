@@ -1,5 +1,6 @@
 package org.shared.messages;
 
+import java.io.Serializable;
 import java.util.UUID;
 
 /**
@@ -7,5 +8,5 @@ import java.util.UUID;
  */
 public record WinnerMessage(
         int roomId, String winnerName, UUID idClient
-) {
+) implements Serializable {
 }
