@@ -42,7 +42,11 @@ public class BingoCard {
     public void printCard() {
         System.out.println("Cartela:");
         for (int i = 0; i < numbers.size(); i++) {
-            System.out.printf("%2d ", numbers.get(i)); // Imprime os números da cartela formatados
+            if (markedNumbers.contains(numbers.get(i))) {
+                System.out.print("X ");
+            } else {
+                System.out.printf("%2d ", numbers.get(i));
+            }
             if ((i + 1) % 5 == 0) { // Quebra a linha a cada 5 números
                 System.out.println();
             }

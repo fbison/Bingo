@@ -9,6 +9,7 @@ public class RoomClient{
     private int id;
     private String name;
     private List<Integer> drawnNumbers;
+    private Integer lastDrawNumber;
     private boolean isActive;
 
     public RoomClient(int id, String name) {
@@ -16,13 +17,15 @@ public class RoomClient{
         this.name = name;
         this.drawnNumbers = new ArrayList<>();
         this.isActive = true;
+        lastDrawNumber = null;
     }
 
 
     public void receiveNumber(int number) {
+        lastDrawNumber = number;
         drawnNumbers.add(number);
         System.out.println("Número recebido na sala: " + number);
-        displayNewNumber(number); // Atualiza a interface para mostrar o novo número
+        //displayNewNumber(number); // Atualiza a interface para mostrar o novo número
     }
 
     // Atualiza a interface com os números sorteados
@@ -32,12 +35,6 @@ public class RoomClient{
         System.out.println("///////////////////////////: ");
     }
 
-    // Atualiza a interface com os números sorteados
-    public void displayRoomStartes(int drawNumber) {
-        System.out.println("///////////////////////////");
-        System.out.println("///////// COMEÇOU /////////" );
-        System.out.println("///////////////////////////: ");
-    }
     // Mostra quais as salas disponíveis
     public void displayRoomsAvailables(List<RoomMessage> rooms) {
         System.out.println("///////////////////////////");
@@ -56,5 +53,16 @@ public class RoomClient{
 
     public String getName() {
         return name;
+    }
+
+    public Integer getLastDrawNumber() {
+        return lastDrawNumber;
+    }
+    public List<Integer> getDrawnNumbers() {
+        return drawnNumbers;
+    }
+
+    public boolean isActive() {
+        return isActive;
     }
 }

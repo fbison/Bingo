@@ -15,6 +15,11 @@ import static org.shared.messages.MessageType.SUCESSO_LOG_IN;
 public class BingoClient {
     private ClientCommunication clientCommunication;
     private PlayerClient playerLoggedIn;
+    private BingoInterface bingoInterface;
+
+    public PlayerClient getPlayerLoggedIn() {
+        return playerLoggedIn;
+    }
 
     // Conecta ao servidor usando TCP e inicializa a comunicação
     public void connectToServer(String host, int port) {
@@ -22,15 +27,27 @@ public class BingoClient {
             Socket socket = new Socket(host, port);
             clientCommunication = new ClientCommunication(socket);
             LogMaker.info("Conectado ao servidor: " + host + ":" + port);
-
             // Inicia uma thread para escutar mensagens do servidor
             new Thread(this::listenToServerMessages).start();
+            startBingoInterface();
         } catch (Exception e) {
             LogMaker.error("Erro ao conectar ao servidor: " + e.getMessage());
             e.printStackTrace();
         }
     }
 
+    private void startBingoInterface() {
+        bingoInterface = new BingoInterface(this);
+        Thread interfaceThread = new Thread(bingoInterface);
+        interfaceThread.start();
+
+        try {
+            // Aguarda a thread da interface do Bingo terminar
+            interfaceThread.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
     // Login de usuário
     public void login(String username, String password) {
         MessageProtocol loginMessage = new MessageProtocol(MessageType.LOG_IN,

@@ -91,4 +91,10 @@ public class PlayerClient {
     public void setCurrentRoom(RoomClient currentRoom) {
         this.currentRoom = currentRoom;
     }
+
+    public void printCards(){
+        for (BingoCard card : cards) {
+            card.printCard();
+        }
+    }
 }
