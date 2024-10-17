@@ -73,6 +73,19 @@ public class RoomServer implements Runnable  {
             lock.unlock();
         }
     }
+    // Remove jogador na sala
+    public void removePlayer(LeaveRoomMessage data) throws Exception {
+        Iterator<PlayerServer> iterator = players.iterator();
+        if(data.roomId() != id) return;
+        while (iterator.hasNext()) {
+            PlayerServer player = iterator.next();
+            if (player.getId().equals(data.playerId())) {
+                iterator.remove(); //remove ele da lista de players
+                if(players.isEmpty()) resetRoom();
+                return;
+            }
+        }
+    }
 
     // Método para iniciar a sala
     private boolean canStart() {
@@ -111,13 +124,18 @@ public class RoomServer implements Runnable  {
     public PlayerServer findValidWinner() {
         synchronized (receivedBingos) {
             LogMaker.info("VALIDANDO VENCEDOR");
-            receivedBingos.sort(Comparator.comparing(BingoMessage::bingoTime));
-            for (BingoMessage receivedBingo : receivedBingos) {
+            receivedBingos.sort(Comparator.comparing(BingoMessage::bingoTime)); //ordena pelo tempo pois o primeiro que enviou que ganha
+            Iterator<BingoMessage> iterator = receivedBingos.iterator();
+            while (iterator.hasNext()) {
+                BingoMessage receivedBingo = iterator.next();
                 if (bingoMessageIsValid(receivedBingo)) {
                     PlayerServer winner = findPlayer(receivedBingo.playerId());
                     if (winner != null) return winner;
+                } else {
+                    // Se for inválido, remove da lista
+                    LogMaker.info("Vencedor " + receivedBingo.playerId() + " inválido, removendo da lista.");
+                    iterator.remove();
                 }
-                LogMaker.info("vencedor" + receivedBingo.playerId()+ " invalido");
             }
         }
         return null;
@@ -142,11 +160,11 @@ public class RoomServer implements Runnable  {
         lock.lock();
         try {
             isActive = false;
-            players.clear();         // Remove todos os jogadores
-            drawnNumbers.clear();    // Limpa os números já sorteados
-            tableNumbers.clear();    // Limpa a tabela de números
-            receivedBingos.clear();  // Limpa os bingos recebidos
-            winner = null;           // Reseta o vencedor
+            players.clear();
+            drawnNumbers.clear();
+            tableNumbers.clear();
+            receivedBingos.clear();
+            winner = null;
 
             LogMaker.info("Sala " + getName() + " foi reiniciada.");
         } finally {

@@ -1,18 +1,12 @@
 package org.server;
 
-import org.shared.JsonParser;
 import org.shared.logs.LogMaker;
-import org.shared.messages.MessageProtocol;
-import org.shared.messages.MessageType;
-import org.shared.messages.RoomMessage;
-import org.shared.messages.RoomsMessage;
+import org.shared.messages.*;
 
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -20,8 +14,9 @@ public class Server {
     private static Server instance;
     private static final int PORT = 12345;
     private static final int QTD_THREADS_SALAS = 3;
-    public static List<PlayerServer> registeredPlayers = new ArrayList<>();
-    private final List<PlayerServer> onlinePlayers = new ArrayList<>(); // Lista de jogadores online
+    public static List<AuthenticationMessage> registeredPlayers = new ArrayList<>(); // Registros de usuários
+    public static HashMap<String, Boolean> isOnline = new HashMap<>(); // Registros de usuários online
+    public static final List<PlayerServer> onlinePlayers = new ArrayList<>(); // Lista de jogadores online
     public static List<RoomServer> rooms = new ArrayList<>();
     private final ExecutorService executor = Executors.newFixedThreadPool(QTD_THREADS_SALAS);
 
@@ -49,7 +44,7 @@ public class Server {
                 LogMaker.info("Cliente conectado: " + clientSocket.getInetAddress());
 
                 PlayerServer player = new PlayerServer(clientSocket);
-                onlinePlayers.add(player);  // Adiciona o jogador à lista de onlinePlayers
+                onlinePlayers.add(player);
 
                 // Inicia uma nova thread para gerenciar a comunicação com o cliente
                 new Thread(player.getCommunication()).start();
@@ -62,7 +57,7 @@ public class Server {
 
     // Método para adicionar jogador à lista de onlinePlayers
     public void addOnlinePlayer(PlayerServer player) {
-        if (!onlinePlayers.contains(player)) {
+        if (!Server.isOnline.get(player.getName())) {
             onlinePlayers.add(player);
             LogMaker.info("Jogador " + player.getId() + " adicionado à lista de jogadores online.");
         } else {

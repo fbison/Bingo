@@ -14,7 +14,8 @@ public enum MessageType {
     SALAS_DISPONIVEIS("Salas Disponíveis"),
     AVISO_INICIO_SORTEIO("Aviso: O sorteio começou"),
     PONG("Pong"),
-    PING("Ping");
+    PING("Ping"),
+    SAIR_DA_SALA("Sair da sala");
 
     private String descricao;
 

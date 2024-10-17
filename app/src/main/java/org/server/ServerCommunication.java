@@ -102,6 +102,9 @@ public class ServerCommunication extends CommunicationBase implements Runnable {
 
     public void disconnect() {
         LogMaker.info("Cliente desconectado.");
+        Server.onlinePlayers.remove(player.getName());
+        Server.isOnline.put(player.getName(), false);
+
         keepAliveEnabled = false;
         super.disconnect();
     }

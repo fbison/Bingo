@@ -52,6 +52,9 @@ public class PlayerServer {
             case ENTRAR_SALA:
                 handleEntrarSala((RoomMessage)message.data());
                 break;
+            case SAIR_DA_SALA:
+                handleSairDaSala((LeaveRoomMessage) message.data());
+                break;
             case ENVIAR_CARTELA:
                 handleEnviarCartela(message.data());
                 break;
@@ -74,16 +77,15 @@ public class PlayerServer {
     private void handleCadastroUsuario(AuthenticationMessage data) {
 
         // Verifica se o usuário já existe
-        for (PlayerServer player : Server.registeredPlayers) {
-            if (player.name != null && player.name.equals(data.username())) {
+        for (AuthenticationMessage player : Server.registeredPlayers) {
+            if (player.username() != null && player.username().equals(data.username())) {
                 LogMaker.info("Usuário já registrado: " + data.username());
                 send(new MessageProtocol(MessageType.ERRO,"Usuário já registrado"));
                 return;
             }
         }
-        this.name = data.username();
-        this.password = data.password();
-        Server.registeredPlayers.add(this);
+        Server.registeredPlayers.add(data);
+        Server.isOnline.put(data.username(), false);
         LogMaker.info("Cadastro bem-sucedido para o usuário: " + data.username());
     }
 
@@ -91,11 +93,11 @@ public class PlayerServer {
     private void handleLogIn(AuthenticationMessage data) {
         LogMaker.info("Tratando login de usuário: " + data);
 
-        for (PlayerServer player : Server.registeredPlayers) {
-            if (player.name.equals(data.username()) && player.password.equals(password)) {
+        for (AuthenticationMessage player : Server.registeredPlayers) {
+            if (player.username().equals(data.username()) && player.password().equals(data.password())) {
+                if(!Server.isOnline.containsKey(player.username()) || Server.isOnline.get(player.username())) return;// ele já está online
                 // é preciso fazer isso por que essa instância do player representa o cliente,
                 // então após  ele logar o player dessa comunicação mudou
-                this.id = player.id;
                 this.name = data.username();
                 this.password = data.password();
 
@@ -163,6 +165,16 @@ public class PlayerServer {
             LogMaker.info("Falha ao entrar na sala: Sala não encontrada");
             send(new MessageProtocol(MessageType.ERRO,"Sala não encontrada"));
 
+        } catch (Exception e) {
+            LogMaker.error("Erro ao processar a entrada na sala: " + e.getMessage());
+        }
+    }
+    // Função que trata a saída do usuário na sala
+    private void handleSairDaSala(LeaveRoomMessage data) {
+        LogMaker.info("Tratando saida da sala: " + data);
+        try {
+            if(!id.equals(data.playerId())) return;
+            currentRoom.removePlayer(data);
         } catch (Exception e) {
             LogMaker.error("Erro ao processar a entrada na sala: " + e.getMessage());
         }

@@ -1,5 +1,6 @@
 package org.client;
 
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import org.shared.BingoCard;
 import org.shared.JsonParser;
 import org.shared.logs.LogMaker;
@@ -54,6 +55,9 @@ public class PlayerClient {
                 break;
             case ENTROU_NA_SALA:
                 handleEnterRoom((EnteredRoomMessage)message.data());
+                break;
+            case ERRO:
+                LogMaker.error((String) message.data());
                 break;
             default:
                 LogMaker.info("Tipo de mensagem desconhecido. ["+ message.type() +"]");
@@ -126,6 +130,10 @@ public class PlayerClient {
     }
 
     public void leaveRoom(){
+        clientCommunication.sendToServer(new MessageProtocol(
+                MessageType.SAIR_DA_SALA, new LeaveRoomMessage(
+                        getCurrentRoom().getId(), id
+        )));
         this.currentRoom = null;
         this.winner = false;
     }
