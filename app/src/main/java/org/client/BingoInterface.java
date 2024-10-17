@@ -90,8 +90,7 @@ public class BingoInterface implements Runnable {
                 await();
                 break;
             case 2:
-                bingoClient.disconnect();
-                running = false;
+                bingoClient.logOut();
                 break;
             default:
                 LogMaker.warn("Opção inválida.");

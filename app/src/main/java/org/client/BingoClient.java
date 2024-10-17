@@ -14,6 +14,9 @@ public class BingoClient {
     public PlayerClient getPlayerLoggedIn() {
         return playerLoggedIn;
     }
+    public void logOut() {
+        playerLoggedIn= null;
+    }
 
     // Conecta ao servidor usando TCP e inicializa a comunicação
     public void connectToServer(String host, int port) {

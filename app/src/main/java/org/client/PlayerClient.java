@@ -57,7 +57,7 @@ public class PlayerClient {
                 handleEnterRoom((EnteredRoomMessage)message.data());
                 break;
             case ERRO:
-                LogMaker.error((String) message.data());
+                System.out.println("\n"+ message.data());
                 break;
             default:
                 LogMaker.info("Tipo de mensagem desconhecido. ["+ message.type() +"]");

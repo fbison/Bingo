@@ -95,9 +95,10 @@ public class PlayerServer {
 
         for (AuthenticationMessage player : Server.registeredPlayers) {
             if (player.username().equals(data.username()) && player.password().equals(data.password())) {
-                if(!Server.isOnline.containsKey(player.username()) || Server.isOnline.get(player.username())) return;// ele já está online
-                // é preciso fazer isso por que essa instância do player representa o cliente,
-                // então após  ele logar o player dessa comunicação mudou
+                if(Server.isOnline.get(player.username())) {
+                    send(new MessageProtocol(MessageType.ERRO,"Esse Usuário já está online"));
+                    return;
+                };
                 this.name = data.username();
                 this.password = data.password();
 

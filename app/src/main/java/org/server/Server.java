@@ -58,6 +58,7 @@ public class Server {
     // Método para adicionar jogador à lista de onlinePlayers
     public void addOnlinePlayer(PlayerServer player) {
         if (!Server.isOnline.get(player.getName())) {
+            Server.isOnline.put(player.getName(), true);
             onlinePlayers.add(player);
             LogMaker.info("Jogador " + player.getId() + " adicionado à lista de jogadores online.");
         } else {
