@@ -69,7 +69,7 @@ public class PlayerClient {
         if(getCurrentRoom() == null || getCurrentRoom().getId() != data.roomId()) return; // Só ignora a mensagem se não for pra sala que ele está
         LogMaker.info("Número sorteado: " + data);
         getCurrentRoom().receiveNumber(data.drawNumber());
-        markNumber(data.drawNumber());
+        //markNumber(data.drawNumber()); usar para testes
     }
 
     private void handleVencedor(WinnerMessage data) {
