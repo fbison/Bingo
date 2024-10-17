@@ -46,7 +46,6 @@ public abstract class CommunicationBase {
         try {
             outputStream.writeObject(data);
             outputStream.flush();
-            LogMaker.info("Dados enviados: " + data.toString());
         } catch (IOException e) {
             LogMaker.error("Erro ao enviar dados: " + e.getMessage());
             e.printStackTrace();
@@ -64,7 +63,6 @@ public abstract class CommunicationBase {
 
         try {
             Object data = inputStream.readObject();
-            LogMaker.info("Dados recebidos: " + data.toString());
             return data;
         } catch (IOException | ClassNotFoundException e) {
             LogMaker.error("Erro ao receber dados: " + e.getMessage());

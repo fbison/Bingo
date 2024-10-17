@@ -44,7 +44,7 @@ public class PlayerClient {
                 handleSorteio((DrawNumberMessage) message.data());
                 break;
             case VENCEDOR:
-                handleVencedor(message.data());
+                handleVencedor((WinnerMessage) message.data());
                 break;
             case SALAS_DISPONIVEIS:
                 handleSalasDisponiveis((RoomsMessage)message.data());
@@ -56,7 +56,7 @@ public class PlayerClient {
                 handleEnterRoom((EnteredRoomMessage)message.data());
                 break;
             default:
-                LogMaker.info("Tipo de mensagem não reconhecido.");
+                LogMaker.info("Tipo de mensagem desconhecido. ["+ message.type() +"]");
                 break;
         }
     }
@@ -68,9 +68,10 @@ public class PlayerClient {
         markNumber(data.drawNumber());
     }
 
-    private void handleVencedor(Object data) {
-        LogMaker.info("Vencedor: " + data);
-        winner = true;
+    private void handleVencedor(WinnerMessage data) {
+        if(data.roomId() != getCurrentRoom().getId()) return;
+        if(data.idClient().equals(id)) winner = true;
+        getCurrentRoom().handleWinner(data);
     }
 
     private void handleSalasDisponiveis(RoomsMessage data) {
@@ -91,7 +92,7 @@ public class PlayerClient {
         }
         Integer RANGE_DRAW = 75;
         cards = new ArrayList<>();
-        cards.add(new BingoCard(RANGE_DRAW));
+        cards.add(new BingoCard(RANGE_DRAW, getCurrentRoom().getId()));
     }
 
     private void handleEnterRoom(EnteredRoomMessage data) {
@@ -122,5 +123,18 @@ public class PlayerClient {
     public BingoCard getCard(){
         if(cards == null) return null;
         return cards.getFirst();
+    }
+
+    public void leaveRoom(){
+        this.currentRoom = null;
+        this.winner = false;
+    }
+
+    public List<RoomMessage> getAvailableRooms() {
+        return availableRooms;
+    }
+
+    public boolean isWinner() {
+        return winner;
     }
 }

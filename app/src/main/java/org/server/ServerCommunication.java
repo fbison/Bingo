@@ -39,6 +39,7 @@ public class ServerCommunication extends CommunicationBase implements Runnable {
                     disconnect();
                     break;
                 }
+                LogMaker.info("Dados recebidos: " + receivedData.toString());
                 processReceivedData(receivedData);
             }
         } catch (Exception e) {

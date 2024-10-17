@@ -17,9 +17,10 @@ public class BingoCard implements Serializable {
     private Set<Integer> markedNumbers; // Números marcados
 
     // Construtor que gera números aleatórios para a cartela
-    public BingoCard(Integer range) {
+    public BingoCard(Integer range, int idRoom) {
         this.rangeDrawn = range;
         this.numbers = generateRandomCard(range);
+        this.idRoom = idRoom;
         this.markedNumbers = new HashSet<>();
     }
 

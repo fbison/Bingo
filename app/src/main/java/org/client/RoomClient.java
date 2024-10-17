@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.shared.messages.RoomMessage;
+import org.shared.messages.WinnerMessage;
 
 public class RoomClient{
     private int id;
@@ -11,7 +12,7 @@ public class RoomClient{
     private List<Integer> drawnNumbers;
     private Integer lastDrawNumber;
     private boolean isActive;
-
+    private WinnerMessage winnerMessage;
     public RoomClient(int id, String name, boolean isActive) {
         this.id = id;
         this.name = name;
@@ -28,22 +29,9 @@ public class RoomClient{
         //displayNewNumber(number); // Atualiza a interface para mostrar o novo número
     }
 
-    // Atualiza a interface com os números sorteados
-    public void displayNewNumber(int drawNumber) {
-        System.out.println("///////////////////////////");
-        System.out.println("///// SORTEADO "+ drawNumber +"////" );
-        System.out.println("///////////////////////////: ");
-    }
 
-    // Mostra quais as salas disponíveis
-    public void displayRoomsAvailables(List<RoomMessage> rooms) {
-        System.out.println("///////////////////////////");
-
-        for (RoomMessage room : rooms) {
-            System.out.println("////////// SALA"+ room.roomId()+"/////////" );
-            System.out.println("////////// "+ room.name()+"/////////" );
-        }
-        System.out.println("///////////////////////////: ");
+    public void handleWinner(WinnerMessage message) {
+        this.winnerMessage = message;
     }
 
     // Funções para obter as informações da sala, como ID e name
@@ -67,5 +55,9 @@ public class RoomClient{
     }
     public void setActive(boolean state){
         isActive= state;
+    }
+
+    public WinnerMessage getWinnerMessage() {
+        return winnerMessage;
     }
 }

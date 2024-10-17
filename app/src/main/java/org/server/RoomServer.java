@@ -110,12 +110,14 @@ public class RoomServer implements Runnable  {
 
     public PlayerServer findValidWinner() {
         synchronized (receivedBingos) {
+            LogMaker.info("VALIDANDO VENCEDOR");
             receivedBingos.sort(Comparator.comparing(BingoMessage::bingoTime));
             for (BingoMessage receivedBingo : receivedBingos) {
                 if (bingoMessageIsValid(receivedBingo)) {
                     PlayerServer winner = findPlayer(receivedBingo.playerId());
                     if (winner != null) return winner;
                 }
+                LogMaker.info("vencedor" + receivedBingo.playerId()+ " invalido");
             }
         }
         return null;
@@ -157,7 +159,6 @@ public class RoomServer implements Runnable  {
     }
     private void stopRoom() {
         isActive = false;
-        broadcastWinner(winner);
         resetRoom();     // Reinicia a sala para permitir um novo jogo
     }
 

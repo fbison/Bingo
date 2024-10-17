@@ -23,8 +23,8 @@ public class PlayerServer {
         id = UUID.randomUUID();  // Gera um UUID único para o jogador
     }
 
-    //trocar aqui para MessageProtocol
-    public void send(Object object) {
+    public void send(MessageProtocol object) {
+        LogMaker.info("Dados enviados para usuario:"+ name+" :" + object.toString());
         communication.send(object);
     }
 
@@ -85,7 +85,6 @@ public class PlayerServer {
         this.password = data.password();
         Server.registeredPlayers.add(this);
         LogMaker.info("Cadastro bem-sucedido para o usuário: " + data.username());
-        send("Cadastro bem-sucedido");
     }
 
     // Função que processa o login do usuário
@@ -134,8 +133,6 @@ public class PlayerServer {
             // Adiciona a cartela à lista de cartelas do jogador
             this.cards.add(cartela);
             LogMaker.info("Cartela enviada com sucesso para o jogador " + name);
-            send("Cartela enviada com sucesso");
-
         } catch (Exception e) {
             LogMaker.error("Erro ao processar o envio da cartela: " + e.getMessage());
         }

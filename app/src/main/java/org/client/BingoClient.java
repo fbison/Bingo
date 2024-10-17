@@ -1,16 +1,10 @@
 package org.client;
 
-import org.shared.BingoCard;
-import org.shared.JsonParser;
 import org.shared.logs.LogMaker;
 import org.shared.messages.*;
 
 import java.net.Socket;
 import java.time.OffsetDateTime;
-import java.util.Map;
-import java.util.UUID;
-
-import static org.shared.messages.MessageType.SUCESSO_LOG_IN;
 
 public class BingoClient {
     private ClientCommunication clientCommunication;
@@ -62,13 +56,6 @@ public class BingoClient {
         clientCommunication.sendToServer(registerMessage);
     }
 
-    // Solicita a lista de salas ao servidor
-    public void requestRooms() {
-        MessageProtocol roomsRequestMessage = new MessageProtocol(MessageType.SALAS_DISPONIVEIS, null);
-        clientCommunication.sendToServer(roomsRequestMessage);
-        LogMaker.info("Solicitação de lista de salas enviada.");
-    }
-
 
     // Ouvindo as mensagens recebidas do servidor em uma thread separada
     private void listenToServerMessages() {
@@ -84,19 +71,19 @@ public class BingoClient {
 
     public void handleMessage(Object receivedData) {
         if (!(receivedData instanceof MessageProtocol message)) {
-            LogMaker.info("Tipo de mensagem desconhecido.");
+            LogMaker.info("Tipo de mensagem desconhecido. ["+ receivedData +"]");
             return;
         }
 
         switch (message.type()) {
             case PING:
                 handlePing();
-                break;
+                return;
             case SUCESSO_LOG_IN:
                 handleLogIn((LogInReturnMessage) message.data());
-                break;
+                return;
         }
-        if (playerLoggedIn != null && message.type() != SUCESSO_LOG_IN) {
+        if (playerLoggedIn != null) {
             playerLoggedIn.handleMessage(message);
         }
     }

@@ -68,6 +68,7 @@ public class Server {
         } else {
             LogMaker.warn("Jogador " + player.getId() + " já está na lista de jogadores online.");
         }
+        sendRoomsToPlayer(player);
     }
 
     // Método para criar n salas no servidor
