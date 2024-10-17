@@ -12,11 +12,11 @@ public class RoomClient{
     private Integer lastDrawNumber;
     private boolean isActive;
 
-    public RoomClient(int id, String name) {
+    public RoomClient(int id, String name, boolean isActive) {
         this.id = id;
         this.name = name;
         this.drawnNumbers = new ArrayList<>();
-        this.isActive = true;
+        this.isActive = isActive;
         lastDrawNumber = null;
     }
 
@@ -64,5 +64,8 @@ public class RoomClient{
 
     public boolean isActive() {
         return isActive;
+    }
+    public void setActive(boolean state){
+        isActive= state;
     }
 }

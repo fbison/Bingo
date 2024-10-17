@@ -6,6 +6,7 @@ public enum MessageType {
     SUCESSO_LOG_IN("Log In de Usuário com sucesso"),
     CADASTRO_USUARIO("Cadastro de Usuário"),
     ENTRAR_SALA("Entrar na Sala"),
+    ENTROU_NA_SALA("Entrar na Sala"),
     ENVIAR_CARTELA("Enviar Cartela"),
     SORTEIO("Sorteio"),
     BINGO("Bingo"),

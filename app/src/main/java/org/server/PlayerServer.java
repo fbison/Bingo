@@ -146,15 +146,19 @@ public class PlayerServer {
         LogMaker.info("Tratando entrada na sala: " + data);
 
         try {
-            int roomId = data.roomId();
+            Integer roomId = data.roomId();
 
             // Verificar se a sala existe
             for (RoomServer room : Server.rooms) {
-                if (room.getId() == roomId) {
+                if (roomId.equals(room.getId())) {
                     currentRoom = room;
                     room.addPlayer(this);  // Adiciona o jogador à sala
                     LogMaker.info("Jogador " + name + " entrou na sala " + roomId);
-                    send("Entrada na sala bem-sucedida");
+                    if(!room.isActive()) { //permite a entrada na sala mesmo ela não estando ativa
+                        send(new MessageProtocol(MessageType.ENTROU_NA_SALA,
+                                new EnteredRoomMessage(room.getId(), room.getName(), this.id, false)
+                        ));
+                    }
                     return;
                 }
             }

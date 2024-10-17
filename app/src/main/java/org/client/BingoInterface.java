@@ -57,17 +57,19 @@ public class BingoInterface implements Runnable {
                 password = scanner.nextLine();
                 bingoClient.login(username, password);
                 System.out.print("Esperando Resposta: ");
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    LogMaker.error(e.getMessage());
-                }
+                await();
                 break;
             default:
                 LogMaker.warn("Opção inválida.");
         }
     }
-
+    private void await(){
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            LogMaker.error(e.getMessage());
+        }
+    }
     private void showMainMenu() {
         System.out.println("=== MENU DE JOGO ===");
         System.out.println("1. Entrar em uma sala");
@@ -82,6 +84,7 @@ public class BingoInterface implements Runnable {
                 System.out.print("Digite o ID da sala: ");
                 int roomId = scanner.nextInt();
                 bingoClient.enterRoom(roomId);
+                await();
                 break;
             case 2:
                 bingoClient.disconnect();
@@ -95,37 +98,15 @@ public class BingoInterface implements Runnable {
     private void showRoomInterface(){
         int lastDrawnNumber = -1; // Valor inicial inválido para comparação
 
+        if(bingoClient.getPlayerLoggedIn().getCurrentRoom() != null &&
+                !bingoClient.getPlayerLoggedIn().getCurrentRoom().isActive())  {
+            System.out.println("Sala não iniciada, aguarde");
+        }
+
         while (bingoClient.getPlayerLoggedIn().getCurrentRoom() != null) {
-            // Verifica o número mais recente sorteado
-            if (bingoClient.getPlayerLoggedIn().getCurrentRoom().getLastDrawNumber() != lastDrawnNumber) {
-                lastDrawnNumber = bingoClient.getPlayerLoggedIn().getCurrentRoom().getLastDrawNumber();
 
-                System.out.println("Número sorteado: " + lastDrawnNumber);
-                System.out.println("Números já sorteados: " + bingoClient.getPlayerLoggedIn().getCurrentRoom().getDrawnNumbers());
-                bingoClient.getPlayerLoggedIn().printCards();
-            }
-
-            System.out.println("Digite um número para marcar ou 'B' para gritar Bingo:");
-
-            // Espera pela entrada do jogador, sem bloquear o loop
-            try {
-                if (System.in.available() > 0) {
-                    Scanner scanner = new Scanner(System.in);
-                    String input = scanner.nextLine();
-
-                    if (input.equalsIgnoreCase("B")) {
-                        bingoClient.sendBingo(); // Envia a declaração de Bingo
-                    } else {
-                        try {
-                            int numberToMark = Integer.parseInt(input);
-                            bingoClient.getPlayerLoggedIn().markNumber(numberToMark); // Marca o número
-                        } catch (NumberFormatException e) {
-                            System.out.println("Entrada inválida. Tente novamente.");
-                        }
-                    }
-                }
-            }catch (IOException e){
-                LogMaker.error(e.getMessage());
+            if(bingoClient.getPlayerLoggedIn().getCurrentRoom().isActive()){
+                lastDrawnNumber = roomInterfaceWhileActive(lastDrawnNumber);
             }
             // Sleep por um curto período para evitar uso excessivo de CPU
             try {
@@ -135,6 +116,44 @@ public class BingoInterface implements Runnable {
                 break;
             }
         }
+    }
+
+    private int roomInterfaceWhileActive(int lastDrawnNumber){
+        // Verifica o número mais recente sorteado
+        if (bingoClient.getPlayerLoggedIn().getCurrentRoom().getLastDrawNumber() != null
+            && bingoClient.getPlayerLoggedIn().getCurrentRoom().getLastDrawNumber() != lastDrawnNumber) {
+
+            lastDrawnNumber = bingoClient.getPlayerLoggedIn().getCurrentRoom().getLastDrawNumber();
+
+            System.out.println("Número sorteado: " + lastDrawnNumber);
+            System.out.println("Números já sorteados: " + bingoClient.getPlayerLoggedIn().getCurrentRoom().getDrawnNumbers());
+            bingoClient.getPlayerLoggedIn().printCards();
+            System.out.println("Digite um número para marcar ou 'B' para gritar Bingo:");
+        }
+
+
+        // Espera pela entrada do jogador, sem bloquear o loop
+        try {
+            if (System.in.available() > 0) {
+                Scanner scanner = new Scanner(System.in);
+                String input = scanner.nextLine();
+
+                if (input.equalsIgnoreCase("B")) {
+                    bingoClient.sendBingo(); // Envia a declaração de Bingo
+                } else {
+                    try {
+                        int numberToMark = Integer.parseInt(input);
+                        bingoClient.getPlayerLoggedIn().markNumber(numberToMark); // Marca o número
+                    } catch (NumberFormatException e) {
+                        System.out.println("Entrada inválida. Tente novamente.");
+                    }
+                }
+            }
+        }catch (IOException e){
+            LogMaker.error(e.getMessage());
+        }
+
+        return lastDrawnNumber;
     }
 
     public void stop() {

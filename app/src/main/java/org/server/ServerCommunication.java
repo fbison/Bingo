@@ -11,8 +11,8 @@ import java.net.Socket;
 public class ServerCommunication extends CommunicationBase implements Runnable {
 
     //diminuir depois
-    private static final long KEEP_ALIVE_INTERVALms = 1500000; // Intervalo para envio do keep-alive (20 segundos)
-    private static final long TIMEOUTms = 3000000; // Timeout de 30 segundos se não houver resposta
+    private static final long KEEP_ALIVE_INTERVALms = 15000; // Intervalo para envio do keep-alive (20 segundos)
+    private static final long TIMEOUTms = 30000; // Timeout de 30 segundos se não houver resposta
 
     private long lastPongReceivedTime; // Marca o tempo da última resposta "pong"
     private boolean keepAliveEnabled = true;

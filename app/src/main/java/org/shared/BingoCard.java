@@ -2,13 +2,14 @@ package org.shared;
 
 import org.shared.logs.LogMaker;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
 
-public class BingoCard {
+public class BingoCard implements Serializable {
     private final int TOTAL_CARD_NUMBERS = 25; // Exemplo: total de números na cartela
     private int rangeDrawn; // Range dos números a serem sorteados
     private final List<Integer> numbers; // Números da cartela

@@ -5,8 +5,6 @@ import org.shared.logs.LogMaker;
 import org.shared.messages.*;
 
 import java.util.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -53,7 +51,7 @@ public class RoomServer implements Runnable  {
         }
     }
 
-    public int getId() {
+    public Integer getId() {
         return id;
     }
 
@@ -128,7 +126,7 @@ public class RoomServer implements Runnable  {
     }
 
     private boolean bingoMessageIsValid(BingoMessage bingo) {
-        return bingo.card().getIdRoom()== id && verifyCard(bingo.card());
+        return bingo.card()!= null && bingo.card().getIdRoom() == id && verifyCard(bingo.card());
     }
 
     private boolean verifyCard(BingoCard card) {
@@ -154,7 +152,9 @@ public class RoomServer implements Runnable  {
         }
     }
 
-
+    public boolean isActive(){
+        return isActive;
+    }
     private void stopRoom() {
         isActive = false;
         broadcastWinner(winner);
@@ -169,7 +169,8 @@ public class RoomServer implements Runnable  {
     }
 
     public void broadcastStartGame() {
-        MessageProtocol mensagem = new MessageProtocol(MessageType.AVISO_INICIO_SORTEIO, new RoomMessage(id, name));
+        MessageProtocol mensagem = new MessageProtocol(MessageType.AVISO_INICIO_SORTEIO,
+                new RoomMessage(id, name));
         ServerUtils.broadcast(this.players, mensagem);
     }
 

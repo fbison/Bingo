@@ -126,7 +126,7 @@ public class BingoClient {
             MessageProtocol bingoMessage = new MessageProtocol(MessageType.BINGO, new BingoMessage(
                     playerLoggedIn.getId(),
                     playerLoggedIn.getCurrentRoom().getId(),
-                    null,
+                    playerLoggedIn.getCard(),
                     OffsetDateTime.now()
             ));
             clientCommunication.sendToServer(bingoMessage);

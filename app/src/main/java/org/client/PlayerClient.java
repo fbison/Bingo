@@ -52,6 +52,9 @@ public class PlayerClient {
             case AVISO_INICIO_SORTEIO:
                 handleAvisoInicioSorteio((RoomMessage)message.data());
                 break;
+            case ENTROU_NA_SALA:
+                handleEnterRoom((EnteredRoomMessage)message.data());
+                break;
             default:
                 LogMaker.info("Tipo de mensagem não reconhecido.");
                 break;
@@ -74,14 +77,33 @@ public class PlayerClient {
         availableRooms = data.rooms();
     }
 
-    private void handleAvisoInicioSorteio(RoomMessage data) {
-        LogMaker.info("Início do sorteio: " + data);
-        setCurrentRoom(
-                new RoomClient(data.roomId(), data.name())
-        );
+    private void handleAvisoInicioSorteio(RoomMessage data){
+        if(getCurrentRoom() != null && !data.roomId().equals(getCurrentRoom().getId())) {
+            LogMaker.error("Sala iniciada não condiz com a sala que o jogador está");
+            return;
+        }
+        if(getCurrentRoom() == null){
+            setCurrentRoom(
+                    new RoomClient(data.roomId(), data.name(), true)
+            ); // entra para caso o aviso de início chegue antes do enterroom
+        }else{
+            getCurrentRoom().setActive(true);
+        }
         Integer RANGE_DRAW = 75;
         cards = new ArrayList<>();
         cards.add(new BingoCard(RANGE_DRAW));
+    }
+
+    private void handleEnterRoom(EnteredRoomMessage data) {
+        if(getCurrentRoom() != null && getCurrentRoom().getId() != data.roomId()) {
+            LogMaker.error("Sala iniciada não condiz com a sala que o jogador está");
+            return;
+        }
+        if(getCurrentRoom() == null){
+            setCurrentRoom(
+                    new RoomClient(data.roomId(), data.roomName(), data.isActive())
+            ); // entra para caso o aviso de início chegue antes do enterroom
+        }
     }
 
     public RoomClient getCurrentRoom() {
@@ -96,5 +118,9 @@ public class PlayerClient {
         for (BingoCard card : cards) {
             card.printCard();
         }
+    }
+    public BingoCard getCard(){
+        if(cards == null) return null;
+        return cards.getFirst();
     }
 }
